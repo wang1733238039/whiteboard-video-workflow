@@ -1,0 +1,7 @@
+# 本 skill 自身依赖
+PyYAML>=6.0
+
+# 视频生成依赖（由 setup_env.py 自动安装到 .venv）
+opencv-python>=4.8.0
+numpy>=1.24.0
+av>=11.0.0

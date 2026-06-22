@@ -1,0 +1,100 @@
+# ============================================================================
+# Whiteboard Video Workflow - 统一配置文件
+# ============================================================================
+# 所有可调整参数都集中在这里管理。
+# 修改本文件后，相关脚本会自动读取最新配置。
+# ============================================================================
+
+# ---------------------------------------------------------------------------
+# 第一部分：图片生成配置（控制 ZHiAi API）
+# ---------------------------------------------------------------------------
+image_generation:
+  # --- API 端点配置 ---
+  api_base: "https://zhiai.art/api/v1/images/generations"
+  # model: 模型标识符，请在下方填入有效的模型名称
+  model: "Nano Banana 2"
+
+  # --- 图片参数 ---
+  aspect_ratio: "16:9"      # 默认宽高比: "1:1" | "9:16" | "16:9" | "3:4" | "4:3"
+
+  # --- 重试与并发 ---
+  max_retries: 3            # 下载失败重试次数
+  retry_base_delay: 3.0     # 重试基础间隔（秒）
+  poll_interval: 5.0        # 轮询间隔（秒），任务提交后等待图片就绪
+  poll_max_wait: 300        # 单次生成最大等待时间（秒）
+  batch_concurrency: 10     # 批量生成并发数
+
+  # --- 图生图参考底图（如模型需要，填入可访问的图片 URL）---
+  # 如果模型报错 "image is required"，需要提供一张可被 zhiai.art 访问的图片 URL
+  # 可以是空白画布图、线稿图等，根据具体模型调整
+  reference_image_url: ""
+
+  # --- API Key ---
+  # 推荐通过环境变量设置: export ZHIAI_API_KEY=你的密钥
+  # 也可以直接写在配置里（不要提交到公开仓库）
+  api_key: ""
+
+# ---------------------------------------------------------------------------
+# 第二部分：白板风格配置（图片提示词模板）
+# ---------------------------------------------------------------------------
+# 提示词前缀，generate-image.py 执行时会自动加载并拼接到每个 prompt 前面
+whiteboard_style:
+  prompt_template: |
+    Minimal hand-drawn illustration, pure illustration without any text,
+    off-white paper background(#F6F1E3), dark gray sketch lines,
+    orange as the only accent color(#CD6441), lots of negative space,
+    Notion-like doodle aesthetic, faceless round-headed human figure,
+    clean editorial composition, conceptual rather than literal,
+    simple background. Absolutely no text, no words, no letters,
+    no typography, no realism, no 3D, no painterly texture,
+    no high saturation, no complex scene, no photographic detail.
+    The overall mood is restrained, lucid, and emotionally calm.
+    Keep the whole series visually consistent.
+
+# ---------------------------------------------------------------------------
+# 第三部分：分镜解析配置
+# ---------------------------------------------------------------------------
+storyboard:
+  # 目标场景时长（秒），用于指导 AI 分镜时的参考范围
+  target_scene_duration:
+    min: 10
+    max: 15
+    # 允许偏离的理由：保持语义完整性、避免在句子中间切分
+
+# ---------------------------------------------------------------------------
+# 第四部分：白板动画视频参数
+# ---------------------------------------------------------------------------
+animation:
+  video_generation:
+    frame_rate: 60              # 输出视频帧率，越高越流畅，文件越大
+    default_duration: 10         # 未指定时长时的默认总时长（秒）
+    skip_rate: 4                # 每帧推进的网格步数，越大绘制越快但越跳跃
+    max_1080p: true             # 是否将图片最长边限制到 1080 像素
+
+  phases:
+    hold_duration: 3            # 停留阶段基准时长（秒）
+    sketch_weight: 2            # 手绘阶段时长权重
+    color_weight: 1             # 上色阶段时长权重
+    # 比例: sketch_weight : color_weight = 2:1
+    # 即默认手绘占 2/3，上色占 1/3
+
+  drawing:
+    split_len: 10              # 网格切分边长（像素），越小绘制越精细但越慢
+    color_brush_radius: 50     # 上色笔刷半径（像素），越大上色越快越柔和
+
+  colors:
+    background_hex: "#F6F1E3"  # 背景画布颜色
+
+  hand:
+    # 手部素材文件: assets/drawing-hand.png
+    # 如需替换，直接替换该文件即可，建议保持原图比例和相对位置
+
+# ---------------------------------------------------------------------------
+# 第五部分：输出目录配置
+# ---------------------------------------------------------------------------
+output:
+  # 默认在 srtPath 同级目录下创建以下子目录
+  subdirs:
+    storyboard: "storyboard"
+    image: "image"
+    video: "video"
